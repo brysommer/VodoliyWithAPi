@@ -15,10 +15,39 @@ export const anketaListiner = async() => {
       {command: '/login', description: 'Авторизуватись, для постійних клієнтів "Водолій"'},
       {command: '/logout', description: 'Вийти з акаунту'}
     ]);
+
+    bot.on("callback_query", async (query) => {
+
+      const action = query.data;
+      const chatId = query.message.chat.id;
+      
+      switch (action) {
+        case 'vendor':
+          
+        case 'volume-1':
+        case 'volume-5':
+        case 'volume-6':
+        case 'volume-10':
+        case 'volume-12':
+        case 'volume-19':
+
+        bot.sendMessage(chatId, phrases.chooseVolume, { reply_markup: keyboards.volumeKeyboard })
+          break;
+        case 'amount-2':
+        case 'amount-5':
+        case 'amount-10':
+        case 'amount-15':
+        case 'amount-20':
+        case 'amount-30':
+        bot.sendMessage(chatId, phrases.chooseAmount, { reply_markup: keyboards.amountKeyboard });  
+          break;
+      }
+    });
     
     bot.on('message', async (msg) => {
       console.log(userAuth)
       console.log(customerPhone)
+      console.log(msg.location);
       const chatId = msg.chat.id;
       if (msg.contact) {
         customerPhone = msg.contact.phone_number;
@@ -29,7 +58,10 @@ export const anketaListiner = async() => {
         customerPhone = msg.text;
         userAuth = true;
         bot.sendMessage(chatId, phrases.congratAuth);
-      };
+      } else if (msg.location) {
+        const chatId = msg.chat.id;
+        bot.sendMessage(chatId, `${msg.location.latitude} , ${msg.location.longitude}`)
+      }
 
       switch (msg.text) {
         case '/start':
@@ -65,6 +97,11 @@ export const anketaListiner = async() => {
             reply_markup: { keyboard: keyboards.login, resize_keyboard: true, one_time_keyboard: true }
           });
           break;
+        case 'Відсканувати QR-код':
+          bot.sendMessage(msg.chat.id, 'Очікую фото', {
+            reply_markup: { keyboard: keyboards.chooseVendor, resize_keyboard: true, one_time_keyboard: true }
+          });
+          break;
         case '/logout':
         case 'Вийти з акаунту':
           userAuth = false;
@@ -75,6 +112,11 @@ export const anketaListiner = async() => {
         case 'Авторизуватись':
         case 'Зареєструватись':
           bot.sendMessage(msg.chat.id, phrases.contactRequest, {
+            reply_markup: { keyboard: keyboards.contactRequest, resize_keyboard: true, one_time_keyboard: true }
+          });
+          break;
+        case 'Відсканувати QR-код': 
+          bot.sendMessage(msg.chat.id, phrases.photoRequest, {
             reply_markup: { keyboard: keyboards.contactRequest, resize_keyboard: true, one_time_keyboard: true }
           });
           break;
