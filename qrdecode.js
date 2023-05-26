@@ -3,6 +3,8 @@ import axios from 'axios';
 import qrCode from 'qrcode';
 import { dataBot } from './values.js';
 import fs from 'fs';
+import jsQR from 'jsqr';
+import Jimp from 'jimp';
 
 
 export const decodeQR = () => {
@@ -16,7 +18,7 @@ export const decodeQR = () => {
           await downloadFile(photoUrl, photoPath);
           const qrText = await readQRCode(photoPath);
           bot.sendMessage(chatId, `Розшифроване число з QR-коду: ${qrText}`);
-          //fs.unlinkSync(photoPath);
+          fs.unlinkSync(photoPath);
         } catch (error) {
           console.error('Помилка обробки фото:', error);
         }
@@ -44,12 +46,18 @@ export const decodeQR = () => {
       };
       
       async function readQRCode(photoPath) {
-        const url = await qrCode.toDataURL(photoPath, { scale: 1 });
-        const base64Data = url.replace(/^data:image\/png;base64,/, '');
-        const decodedData = Buffer.from(base64Data, 'base64').toString('binary');
-        return decodedData;
+        const image = await Jimp.read(photoPath);
+        const width = image.bitmap.width;
+        const height = image.bitmap.height;
+        const pixels = jsQR(image.bitmap.data, width, height);
+        if (pixels && pixels.data) {
+          const qrText = pixels.data;
+          return qrText;
+        } else {
+          throw new Error('QR-код не знайдений');
+        }
       }
-            
+
       // Обробка помилок
       process.on('unhandledRejection', (error) => {
         console.error('Unhandled promise rejection:', error);

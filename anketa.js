@@ -5,9 +5,6 @@ import { DateTime } from "luxon";
 
 let customerInfo = {};
 const phoneRegex = /^\d{10,12}$/;
-let userAuth = false;
-let customerPhone;
-
 
 export const anketaListiner = async() => {
     bot.setMyCommands([
@@ -22,8 +19,20 @@ export const anketaListiner = async() => {
       const chatId = query.message.chat.id;
       
       switch (action) {
-        case 'vendor':
-          
+        case  '/volume':
+          bot.sendMessage(chatId, phrases.chooseVolume, { reply_markup: keyboards.volumeKeyboard })
+          break;
+        case '/price':
+          bot.sendMessage(chatId, phrases.chooseAmount, { reply_markup: keyboards.amountKeyboard });  
+          break;
+        case '/water':
+          customerInfo[chatId].goods = 'water';
+          bot.sendMessage(chatId, phrases.volumeOrPrice, { reply_markup: keyboards.volumeOrPrice })
+          break;
+        case '/richedwater':
+          customerInfo[chatId].goods = 'richedwater';
+          bot.sendMessage(chatId, phrases.volumeOrPrice, { reply_markup: keyboards.volumeOrPrice })
+          break;
         case 'volume-1':
         case 'volume-5':
         case 'volume-6':
@@ -31,32 +40,45 @@ export const anketaListiner = async() => {
         case 'volume-12':
         case 'volume-19':
 
-        bot.sendMessage(chatId, phrases.chooseVolume, { reply_markup: keyboards.volumeKeyboard })
-          break;
         case 'amount-2':
         case 'amount-5':
         case 'amount-10':
         case 'amount-15':
         case 'amount-20':
         case 'amount-30':
-        bot.sendMessage(chatId, phrases.chooseAmount, { reply_markup: keyboards.amountKeyboard });  
-          break;
       }
     });
     
     bot.on('message', async (msg) => {
-      console.log(userAuth)
-      console.log(customerPhone)
-      console.log(msg.location);
       const chatId = msg.chat.id;
+      if (!customerInfo[chatId]) {
+        customerInfo[chatId] = {};
+        customerInfo[chatId].isAuthenticated = false;
+      };
+      if (customerInfo[chatId].hasOwnProperty('goods')) {
+        if (!isNaN(parseFloat(msg.text))) {
+          const goods = customerInfo[chatId].goods
+          switch (goods) {
+            case 'water': 
+              bot.sendMessage(chatId, `Ви замовили ${msg.text} питної води`);
+              break;
+            case 'richedwater': 
+              bot.sendMessage(chatId, `Ви замовили ${msg.text} мінералізованої води`);
+              break;
+          }  
+        }
+      }
+      let userAuth = customerInfo[chatId].isAuthenticated;
+      console.log(customerInfo[chatId]);
+      console.log(msg.location);
       if (msg.contact) {
-        customerPhone = msg.contact.phone_number;
-        userAuth = true;
+        customerInfo[chatId].phone = msg.contact.phone_number;
+        customerInfo[chatId].isAuthenticated = true;
         bot.sendMessage(chatId, phrases.congratAuth, { 
           reply_markup: { keyboard: keyboards.mainMenu, resize_keyboard: true, one_time_keyboard: true }});
       } else if (phoneRegex.test(msg.text)) {
-        customerPhone = msg.text;
-        userAuth = true;
+        customerInfo[chatId].phone = msg.text;
+        customerInfo[chatId].isAuthenticated = true;
         bot.sendMessage(chatId, phrases.congratAuth);
       } else if (msg.location) {
         const chatId = msg.chat.id;
@@ -66,13 +88,14 @@ export const anketaListiner = async() => {
       switch (msg.text) {
         case '/start':
           if (userAuth) 
-          bot.sendMessage(msg.chat.id, phrases.mainMenu, {
-            reply_markup: { keyboard: keyboards.mainMenu, resize_keyboard: true, one_time_keyboard: true }
-          });
-          else 
-          bot.sendMessage(msg.chat.id, phrases.greetings, {
-            reply_markup: { keyboard: keyboards.login, resize_keyboard: true, one_time_keyboard: true }
-          });
+            bot.sendMessage(msg.chat.id, phrases.mainMenu, {
+              reply_markup: { keyboard: keyboards.mainMenu, resize_keyboard: true, one_time_keyboard: true }
+            });
+          else {
+            bot.sendMessage(msg.chat.id, phrases.greetings, {
+              reply_markup: { keyboard: keyboards.login, resize_keyboard: true, one_time_keyboard: true }
+            });
+          }
           break;
         case 'До головного меню':
           if (userAuth) {
@@ -87,7 +110,6 @@ export const anketaListiner = async() => {
           break;
         case '/login':
           if (userAuth) {
-            userAuth = false;
             bot.sendMessage(msg.chat.id, phrases.alreadyAuth, {
               reply_markup: { keyboard: keyboards.mainMenu, resize_keyboard: true, one_time_keyboard: true }
             });  
@@ -97,6 +119,11 @@ export const anketaListiner = async() => {
             reply_markup: { keyboard: keyboards.login, resize_keyboard: true, one_time_keyboard: true }
           });
           break;
+        case 'Ввести номер автомата': 
+          bot.sendMessage(msg.chat.id, phrases.selectGoods, {
+            reply_markup: keyboards.twoWaters
+          });
+          break;
         case 'Відсканувати QR-код':
           bot.sendMessage(msg.chat.id, 'Очікую фото', {
             reply_markup: { keyboard: keyboards.chooseVendor, resize_keyboard: true, one_time_keyboard: true }
@@ -104,7 +131,7 @@ export const anketaListiner = async() => {
           break;
         case '/logout':
         case 'Вийти з акаунту':
-          userAuth = false;
+          customerInfo[chatId].isAuthenticated = false;
           bot.sendMessage(chatId, phrases.logout, {
             reply_markup: { keyboard: keyboards.login, resize_keyboard: true },
           });
@@ -159,33 +186,7 @@ export const anketaListiner = async() => {
           });
           break;
         case '⭐️ Бонуси': 
-          let userBonusAcc = `
-          💫 Ваші бонуси при обороті:
-
-          ✅ 0 БОНУСНИХ грн
-          20% від поповнення
-
-          ↗️ 1000 БОНУСНИХ грн
-          30% від поповнення
-
-          ↗️ 2000 БОНУСНИХ грн
-          30% від поповнення
-
-          ↗️ 3000 БОНУСНИХ грн
-          30% від поповнення
-
-          ↗️ 4000 БОНУСНИХ грн
-          30% від поповнення
-
-
-          🌟 Додаткові бонуси:
-
-          За поповнення онлайн:
-          5% від поповнення
-
-          За поповнення QR кодом:
-          5% від поповнення
-          `
+          let userBonusAcc = phrases.userBonusAcc;
           bot.sendMessage(msg.chat.id, userBonusAcc, {
             reply_markup: { keyboard: keyboards.accountStatus, resize_keyboard: true, one_time_keyboard: true }
           });
