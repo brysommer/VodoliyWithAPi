@@ -20,9 +20,11 @@ export const anketaListiner = async() => {
       
       switch (action) {
         case  '/volume':
+          customerInfo[chatId].units = 'volume';
           bot.sendMessage(chatId, phrases.chooseVolume, { reply_markup: keyboards.volumeKeyboard })
           break;
         case '/price':
+          customerInfo[chatId].units = 'price';
           bot.sendMessage(chatId, phrases.chooseAmount, { reply_markup: keyboards.amountKeyboard });  
           break;
         case '/water':
@@ -57,13 +59,20 @@ export const anketaListiner = async() => {
       };
       if (customerInfo[chatId].hasOwnProperty('goods')) {
         if (!isNaN(parseFloat(msg.text))) {
-          const goods = customerInfo[chatId].goods
+          const goods = customerInfo[chatId].goods;
+          const units = customerInfo[chatId].units;
           switch (goods) {
             case 'water': 
-              bot.sendMessage(chatId, `Ви замовили ${msg.text} питної води`);
+              if (units === 'volume')
+                bot.sendMessage(chatId, `Ви замовили ${msg.text} літрів питної води`)
+              else if (units === 'price')
+                bot.sendMessage(chatId, `Ви замовили питної води на ${msg.text} гривень`);
               break;
             case 'richedwater': 
-              bot.sendMessage(chatId, `Ви замовили ${msg.text} мінералізованої води`);
+              if (units === 'volume')
+                bot.sendMessage(chatId, `Ви замовили ${msg.text} літр мінералізованої води`)
+              else if (units === 'price')
+                bot.sendMessage(chatId, `Ви замовили мінералізованої води на ${msg.text} гривень`)
               break;
           }  
         }
