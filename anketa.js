@@ -63,16 +63,22 @@ export const anketaListiner = async() => {
           const units = customerInfo[chatId].units;
           switch (goods) {
             case 'water': 
-              if (units === 'volume')
-                bot.sendMessage(chatId, `Ви замовили ${msg.text} літрів питної води`)
-              else if (units === 'price')
+              if (units === 'volume') {
+                bot.sendMessage(chatId, `Ви замовили ${msg.text} літрів питної води`);
+                logger.info(`USER_ID: ${chatId} make an order`);
+              } else if (units === 'price') {
+                logger.info(`USER_ID: ${chatId} make an order`);
                 bot.sendMessage(chatId, `Ви замовили питної води на ${msg.text} гривень`);
+              }
               break;
             case 'richedwater': 
-              if (units === 'volume')
-                bot.sendMessage(chatId, `Ви замовили ${msg.text} літр мінералізованої води`)
-              else if (units === 'price')
-                bot.sendMessage(chatId, `Ви замовили мінералізованої води на ${msg.text} гривень`)
+              if (units === 'volume') {
+                logger.info(`USER_ID: ${chatId} make an order`);
+                bot.sendMessage(chatId, `Ви замовили ${msg.text} літр мінералізованої води`);
+              } else if (units === 'price') {
+                logger.info(`USER_ID: ${chatId} make an order`);
+                bot.sendMessage(chatId, `Ви замовили мінералізованої води на ${msg.text} гривень`);
+              }
               break;
           }  
         }
@@ -83,14 +89,17 @@ export const anketaListiner = async() => {
       if (msg.contact) {
         customerInfo[chatId].phone = msg.contact.phone_number;
         customerInfo[chatId].isAuthenticated = true;
+        logger.info(`USER_ID: ${chatId} logged in`);
         bot.sendMessage(chatId, phrases.congratAuth, { 
           reply_markup: { keyboard: keyboards.mainMenu, resize_keyboard: true, one_time_keyboard: true }});
       } else if (phoneRegex.test(msg.text)) {
         customerInfo[chatId].phone = msg.text;
         customerInfo[chatId].isAuthenticated = true;
+        logger.info(`USER_ID: ${chatId} logged in`);
         bot.sendMessage(chatId, phrases.congratAuth);
       } else if (msg.location) {
         const chatId = msg.chat.id;
+        logger.info(`USER_ID: ${chatId} share location`);
         bot.sendMessage(chatId, `${msg.location.latitude} , ${msg.location.longitude}`)
       }
 
@@ -101,6 +110,7 @@ export const anketaListiner = async() => {
               reply_markup: { keyboard: keyboards.mainMenu, resize_keyboard: true, one_time_keyboard: true }
             });
           else {
+            logger.info(`USER_ID: ${chatId} join BOT`);
             bot.sendMessage(msg.chat.id, phrases.greetings, {
               reply_markup: { keyboard: keyboards.login, resize_keyboard: true, one_time_keyboard: true }
             });
@@ -141,6 +151,7 @@ export const anketaListiner = async() => {
         case '/logout':
         case 'Вийти з акаунту':
           customerInfo[chatId].isAuthenticated = false;
+          logger.info(`USER_ID: ${chatId} logged out`);
           bot.sendMessage(chatId, phrases.logout, {
             reply_markup: { keyboard: keyboards.login, resize_keyboard: true },
           });

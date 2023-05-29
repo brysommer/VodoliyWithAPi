@@ -24,6 +24,7 @@ const logger = {
 
     async info(desc) {
         const channel = dataBot.loggerId || -1;
+        console.log(channel);
         const log = `🏂 ${this.now} ${desc}`;
         const res = await this.createNewLog(channel, log);
         if (res && DEBUG) {
