@@ -1,6 +1,5 @@
 import { bot } from "./app.js";
 import axios from 'axios';
-import qrCode from 'qrcode';
 import { dataBot } from './values.js';
 import fs from 'fs';
 import jsQR from 'jsqr';
