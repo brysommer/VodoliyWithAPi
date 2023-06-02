@@ -11,7 +11,6 @@ import {
 } from './models/users.js';
 
 
-let customerInfo = {};
 const phoneRegex = /^\d{10,12}$/;
 
 export const anketaListiner = async() => {
@@ -62,12 +61,16 @@ export const anketaListiner = async() => {
     bot.on('message', async (msg) => {
       const chatId = msg.chat.id;
       const userInfo = await findUserByChatId(chatId);
-      const isAuthenticated = userInfo.isAuthenticated;
-      console.log(userInfo);
-      if (!customerInfo[chatId]) {
-        customerInfo[chatId] = {};
-        customerInfo[chatId].isAuthenticated = false;
-      };
+      let dialogueStatus;
+      let isAuthenticated;
+      let birthDaydate;
+      if (userInfo) {
+        console.log(userInfo);
+        dialogueStatus = userInfo.dialoguestatus;
+        isAuthenticated = userInfo.isAuthenticated;
+        birthDaydate = userInfo.birthdaydate;
+      }
+      
       if (!isNaN(parseFloat(msg.text))) {
         const goods = userInfo.goods;
         const units = userInfo.units;
@@ -92,47 +95,58 @@ export const anketaListiner = async() => {
             break;
         }  
       }
-      if (msg.contact) {
+      if (msg.contact && dialogueStatus === '') {
         try {
-          await updateUserByChatId(chatId, { phone: msg.contact.phone_number });
-          await userLogin(chatId);
-          logger.info(`USER_ID: ${chatId} logged in`);
-          bot.sendMessage(chatId, phrases.congratAuth, { 
-            reply_markup: { keyboard: keyboards.mainMenu, resize_keyboard: true, one_time_keyboard: true }});  
+          await updateUserByChatId(chatId, { phone: msg.contact.phone_number, dialoguestatus: 'name' });
+          await bot.sendMessage(chatId, `Введіть імя`);
         } catch (error) {
-          logger.warn(`User can't login`);
+          logger.warn(`Cann't update phone number`);
         }
-      } else if (phoneRegex.test(msg.text)) {
-        try {
-          await updateUserByChatId(chatId, { phone: msg.text });
+      } else if (dialogueStatus === 'name') {
+        await updateUserByChatId(chatId, { firstname: msg.text, dialoguestatus: 'surname' });
+        await bot.sendMessage(chatId, `Введіть прізвище`);
+      } else if (dialogueStatus === 'surname') {
+        await updateUserByChatId(chatId, { lastname: msg.text, dialoguestatus: 'fathersname' });
+        await bot.sendMessage(chatId, `Введіть побатькові`);
+      } else if (dialogueStatus === 'fathersname') {
+        await updateUserByChatId(chatId, { fathersname: msg.text, dialoguestatus: 'birdaydate' });
+        await bot.sendMessage(chatId, `Введіть дату народження в форматі ДД.ММ.РРРР. Наприклад 05.03.1991`);
+      } else if (dialogueStatus === 'birdaydate') {
+        await updateUserByChatId(chatId, { birthdaydate: msg.text, dialoguestatus: '' });
+        await userLogin(chatId);
+        logger.info(`USER_ID: ${chatId} registred`);
+        bot.sendMessage(chatId, phrases.congratAuth, { 
+          reply_markup: { keyboard: keyboards.mainMenu, resize_keyboard: true, one_time_keyboard: true }});
+      } else if (dialogueStatus === 'numberlogin') {
+        await updateUserByChatId(chatId, { dialoguestatus: 'birthdaylogin' }); 
+        await bot.sendMessage(chatId, `Введіть дату народження у форматі ДД.ММ.РРРР. Наприклад 05.03.1991`);
+      } else if (dialogueStatus === 'birthdaylogin') {
+        if (msg.text === birthDaydate) {
+          await updateUserByChatId(chatId, { dialoguestatus: '' });
           await userLogin(chatId);
-          logger.info(`USER_ID: ${chatId} logged in`);
+          logger.info(`USER_ID: ${chatId} loggin`);  
           bot.sendMessage(chatId, phrases.congratAuth, { 
             reply_markup: { keyboard: keyboards.mainMenu, resize_keyboard: true, one_time_keyboard: true }});  
-        } catch (error) {
-          logger.warn(`User can't login`);
+        } else {
+          bot.sendMessage(chatId, `Дата ${msg.text} не відповідає номеру ${userInfo.phone}`);  
         }
       } else if (msg.location) {
         logger.info(`USER_ID: ${chatId} share location`);
-        bot.sendMessage(chatId, `${msg.location.latitude} , ${msg.location.longitude}`)
+        bot.sendMessage(chatId, `${msg.location.latitude} , ${msg.location.longitude}`);
       }
 
       switch (msg.text) {
         case '/start':
+          await updateUserByChatId(chatId, { dialoguestatus: '' });
           if (isAuthenticated) 
             bot.sendMessage(msg.chat.id, phrases.mainMenu, {
               reply_markup: { keyboard: keyboards.mainMenu, resize_keyboard: true, one_time_keyboard: true }
             });
           else {
-            try {
-              await createNewUserByChatId(chatId);
-              logger.info(`USER_ID: ${chatId} join BOT`);
-              bot.sendMessage(msg.chat.id, phrases.greetings, {
-                reply_markup: { keyboard: keyboards.login, resize_keyboard: true, one_time_keyboard: true }
-              });  
-            } catch (error) {
-              logger.warn(`Can't create user in database`);
-            }
+            logger.info(`USER_ID: ${chatId} join BOT`);
+            bot.sendMessage(msg.chat.id, phrases.greetings, {
+              reply_markup: { keyboard: keyboards.login, resize_keyboard: true, one_time_keyboard: true }
+            });  
           }
           break;
         case 'До головного меню':
@@ -180,10 +194,21 @@ export const anketaListiner = async() => {
           }
           break;
         case 'Авторизуватись':
-        case 'Зареєструватись':
-          bot.sendMessage(msg.chat.id, phrases.contactRequest, {
+          await updateUserByChatId(chatId, { dialoguestatus: 'numberlogin' });
+          await bot.sendMessage(msg.chat.id, phrases.contactRequest, {
             reply_markup: { keyboard: keyboards.contactRequest, resize_keyboard: true, one_time_keyboard: true }
           });
+          break; 
+        case 'Зареєструватись':
+          if(userInfo) {
+            bot.sendMessage(chatId, `Ви вже зареєстровані, будь ласка, авторизуйтесь`,{
+              reply_markup: { keyboard: keyboards.login, resize_keyboard: true, one_time_keyboard: true }
+            });
+          } else {
+            bot.sendMessage(msg.chat.id, phrases.contactRequest, {
+              reply_markup: { keyboard: keyboards.contactRequest, resize_keyboard: true, one_time_keyboard: true }
+            });  
+          }
           break;
         case 'Відсканувати QR-код': 
           bot.sendMessage(msg.chat.id, phrases.photoRequest, {

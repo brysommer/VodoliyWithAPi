@@ -18,6 +18,14 @@ User.init({
         type: DataTypes.STRING,
         allowNull: true
     },
+    fathersname: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    birthdaydate: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     isAuthenticated: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
@@ -34,10 +42,16 @@ User.init({
     units: {
         type: DataTypes.STRING,
         allowNull: true
-    }
+    },
+    dialoguestatus: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: ''
+    },
+
 }, {
     freezeTableName: false,
-    timestamps: false,
+    timestamps: true,
     modelName: 'users',
     sequelize
 });

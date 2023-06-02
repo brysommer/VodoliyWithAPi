@@ -14,7 +14,8 @@ const main = async () => {
             const userData = {
                 chat_id: pseudoRandom(),
                 firstname: 'migration_record',
-                phone: pseudoRandom().toString()
+                phone: pseudoRandom().toString(),
+                dialoguestatus: '',
             };
 
             logger.info('Log created by migration procedure');
