@@ -137,7 +137,7 @@ export const anketaListiner = async() => {
 
       switch (msg.text) {
         case '/start':
-          await updateUserByChatId(chatId, { dialoguestatus: '' });
+          if(userInfo) await updateUserByChatId(chatId, { dialoguestatus: '' });
           if (isAuthenticated) 
             bot.sendMessage(msg.chat.id, phrases.mainMenu, {
               reply_markup: { keyboard: keyboards.mainMenu, resize_keyboard: true, one_time_keyboard: true }
@@ -194,17 +194,25 @@ export const anketaListiner = async() => {
           }
           break;
         case 'Авторизуватись':
-          await updateUserByChatId(chatId, { dialoguestatus: 'numberlogin' });
-          await bot.sendMessage(msg.chat.id, phrases.contactRequest, {
-            reply_markup: { keyboard: keyboards.contactRequest, resize_keyboard: true, one_time_keyboard: true }
-          });
-          break; 
+          if(userInfo) {
+            await updateUserByChatId(chatId, { dialoguestatus: 'numberlogin' });
+            await bot.sendMessage(msg.chat.id, phrases.contactRequest, {
+              reply_markup: { keyboard: keyboards.contactRequest, resize_keyboard: true, one_time_keyboard: true }
+            });
+             
+          } else {
+            await bot.sendMessage(msg.chat.id, phrases.registerRequest, {
+              reply_markup: { keyboard: keyboards.login, resize_keyboard: true, one_time_keyboard: true }
+            });
+          };
+          break;  
         case 'Зареєструватись':
           if(userInfo) {
             bot.sendMessage(chatId, `Ви вже зареєстровані, будь ласка, авторизуйтесь`,{
               reply_markup: { keyboard: keyboards.login, resize_keyboard: true, one_time_keyboard: true }
             });
           } else {
+            await createNewUserByChatId(chatId);
             bot.sendMessage(msg.chat.id, phrases.contactRequest, {
               reply_markup: { keyboard: keyboards.contactRequest, resize_keyboard: true, one_time_keyboard: true }
             });  
