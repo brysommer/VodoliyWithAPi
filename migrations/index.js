@@ -9,6 +9,7 @@ const main = async () => {
             User.sync(),
         ]);
         
+        
         if (DEBUG && syncState) {
             const pseudoRandom = () => Math.floor(Math.random() * 10000);
             const userData = {

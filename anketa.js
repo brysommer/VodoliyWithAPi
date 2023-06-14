@@ -9,9 +9,9 @@ import {
   findUserByChatId,
   createNewUserByChatId
 } from './models/users.js';
+import { generateKeyboard } from './src/plugins.js'
 
 
-const phoneRegex = /^\d{10,12}$/;
 
 export const anketaListiner = async() => {
     bot.setMyCommands([
@@ -162,8 +162,10 @@ export const anketaListiner = async() => {
           break;
         case '/login':
           if (isAuthenticated) {
+            const keyboard = generateKeyboard(2, keyboards.mainMenu);
+            console.log(keyboard);
             bot.sendMessage(msg.chat.id, phrases.alreadyAuth, {
-              reply_markup: { keyboard: keyboards.mainMenu, resize_keyboard: true, one_time_keyboard: true }
+              reply_markup: { keyboard: keyboard, resize_keyboard: true, one_time_keyboard: true }
             });  
           }
           else
