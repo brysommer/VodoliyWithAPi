@@ -65,7 +65,6 @@ export const anketaListiner = async() => {
       let isAuthenticated;
       let birthDaydate;
       if (userInfo) {
-        console.log(userInfo);
         dialogueStatus = userInfo.dialoguestatus;
         isAuthenticated = userInfo.isAuthenticated;
         birthDaydate = userInfo.birthdaydate;
@@ -163,7 +162,6 @@ export const anketaListiner = async() => {
         case '/login':
           if (isAuthenticated) {
             const keyboard = generateKeyboard(2, keyboards.mainMenu);
-            console.log(keyboard);
             bot.sendMessage(msg.chat.id, phrases.alreadyAuth, {
               reply_markup: { keyboard: keyboard, resize_keyboard: true, one_time_keyboard: true }
             });  

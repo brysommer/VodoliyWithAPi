@@ -4,7 +4,7 @@ import { dataBot } from './values.js';
 import {decodeQR} from './qrdecode.js';
 import { sequelize } from './models/sequelize.js';
 import { logger } from './logger/index.js';
-console.log(dataBot.telegramBotToken)
+
 const bot = new TelegramBot(dataBot.telegramBotToken, { polling: true });
 
 export { bot };
