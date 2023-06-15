@@ -1,7 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { anketaListiner } from './anketa.mjs';
 import { dataBot } from './values.mjs';
-import {decodeQR} from './qrdecode.mjs';
+import { decodeQR } from './qrdecode.mjs';
 import { sequelize } from './models/sequelize.mjs';
 import { logger } from './logger/index.mjs';
 
