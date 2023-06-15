@@ -1,6 +1,6 @@
 import { Model, DataTypes } from "sequelize";
-import { sequelize } from './sequelize.js';
-import { logger } from '../logger/index.js';
+import { sequelize } from './sequelize.mjs';
+import { logger } from '../logger/index.mjs';
 
 
 class User extends Model {}

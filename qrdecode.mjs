@@ -1,6 +1,6 @@
-import { bot } from "./app.js";
+import { bot } from "./app.mjs";
 import axios from 'axios';
-import { dataBot } from './values.js';
+import { dataBot } from './values.mjs';
 import fs from 'fs';
 import jsQR from 'jsqr';
 import Jimp from 'jimp';

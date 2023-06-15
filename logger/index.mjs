@@ -1,6 +1,6 @@
-import { bot } from "../app.js";
+import { bot } from "../app.mjs";
 import { DateTime } from "luxon";
-import { dataBot } from '../values.js';
+import { dataBot } from '../values.mjs';
 
 const DEBUG = true;
 

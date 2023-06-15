@@ -1,5 +1,5 @@
-import { User, createNewUser } from '../models/users.js';
-import { logger } from '../logger/index.js';
+import { User, createNewUser } from '../models/users.mjs';
+import { logger } from '../logger/index.mjs';
 
 const DEBUG = true;
 

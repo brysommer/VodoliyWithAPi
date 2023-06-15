@@ -1,4 +1,4 @@
-import { generateKeyboard } from './src/plugins.js'
+import { generateKeyboard } from './src/plugins.mjs'
 
 const phrases = {
     greetings: 'Привіт, я бот Водолій. Авторизуйтеся для доступу до функціоналу',
