@@ -14,12 +14,14 @@ import { generateKeyboard } from './src/plugins.mjs'
 
 
 export const anketaListiner = async() => {
+  
     bot.setMyCommands([
       {command: '/start', description: 'До головного меню'},
-      {command: '/login', description: 'Авторизуватись, для постійних клієнтів "Водолій"'},
+      {command: '/login', description: 'Авторизація існуючого користувача'},
+      {command: '/register', description: 'Реєстрація нового користувача'},
       {command: '/logout', description: 'Вийти з акаунту'}
     ]);
-
+  
     bot.on("callback_query", async (query) => {
 
       const action = query.data;
@@ -69,7 +71,9 @@ export const anketaListiner = async() => {
         isAuthenticated = userInfo.isAuthenticated;
         birthDaydate = userInfo.birthdaydate;
       }
-      
+
+    
+    
       if (!isNaN(parseFloat(msg.text))) {
         const goods = userInfo.goods;
         const units = userInfo.units;
@@ -97,18 +101,12 @@ export const anketaListiner = async() => {
       if (msg.contact && dialogueStatus === '') {
         try {
           await updateUserByChatId(chatId, { phone: msg.contact.phone_number, dialoguestatus: 'name' });
-          await bot.sendMessage(chatId, `Введіть імя`);
+          await bot.sendMessage(chatId, `Введіть ПІБ`);
         } catch (error) {
           logger.warn(`Cann't update phone number`);
         }
       } else if (dialogueStatus === 'name') {
-        await updateUserByChatId(chatId, { firstname: msg.text, dialoguestatus: 'surname' });
-        await bot.sendMessage(chatId, `Введіть прізвище`);
-      } else if (dialogueStatus === 'surname') {
-        await updateUserByChatId(chatId, { lastname: msg.text, dialoguestatus: 'fathersname' });
-        await bot.sendMessage(chatId, `Введіть побатькові`);
-      } else if (dialogueStatus === 'fathersname') {
-        await updateUserByChatId(chatId, { fathersname: msg.text, dialoguestatus: 'birdaydate' });
+        await updateUserByChatId(chatId, { firstname: msg.text, dialoguestatus: 'birdaydate' });
         await bot.sendMessage(chatId, `Введіть дату народження в форматі ДД.ММ.РРРР. Наприклад 05.03.1991`);
       } else if (dialogueStatus === 'birdaydate') {
         await updateUserByChatId(chatId, { birthdaydate: msg.text, dialoguestatus: '' });
@@ -148,6 +146,7 @@ export const anketaListiner = async() => {
             });  
           }
           break;
+        case 'Повернутися до головного меню':
         case 'До головного меню':
           if (isAuthenticated) {
             bot.sendMessage(msg.chat.id, phrases.mainMenu, {
@@ -161,9 +160,8 @@ export const anketaListiner = async() => {
           break;
         case '/login':
           if (isAuthenticated) {
-            const keyboard = generateKeyboard(2, keyboards.mainMenu);
             bot.sendMessage(msg.chat.id, phrases.alreadyAuth, {
-              reply_markup: { keyboard: keyboard, resize_keyboard: true, one_time_keyboard: true }
+              reply_markup: { keyboard: keyboards.mainMenu, resize_keyboard: true, one_time_keyboard: true }
             });  
           }
           else
@@ -207,6 +205,7 @@ export const anketaListiner = async() => {
           };
           break;  
         case 'Зареєструватись':
+        case '/register':
           if(userInfo) {
             bot.sendMessage(chatId, `Ви вже зареєстровані, будь ласка, авторизуйтесь`,{
               reply_markup: { keyboard: keyboards.login, resize_keyboard: true, one_time_keyboard: true }
@@ -226,7 +225,7 @@ export const anketaListiner = async() => {
         case 'Ні, я введу номер вручну':
           bot.sendMessage(msg.chat.id, phrases.phoneRules);
           break;
-        case '⛽️ Купівля товару': 
+        case '⛽️ Купити воду': 
           bot.sendMessage(msg.chat.id, phrases.chooseVendor, {
             reply_markup: { keyboard: keyboards.chooseVendor, resize_keyboard: true, one_time_keyboard: true }
           });
@@ -256,7 +255,7 @@ export const anketaListiner = async() => {
             reply_markup: { keyboard: keyboards.accountStatus, resize_keyboard: true, one_time_keyboard: true }
           });
           break;
-        case '💸 Поповнити баланс':
+        case '💸 Поповнити картку':
           bot.sendMessage(msg.chat.id, phrases.enterTopupAmount, {
             reply_markup: { keyboard: keyboards.returnToBalance, resize_keyboard: true, one_time_keyboard: true }
           });
