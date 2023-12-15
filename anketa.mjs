@@ -117,19 +117,24 @@ export const anketaListiner = async() => {
     
     bot.on('message', async (msg) => {
       const chatId = msg.chat.id;
-      const userInfo = await findUserByChatId(chatId);
-      let dialogueStatus;
-      let isAuthenticated;
-      let birthDaydate;
-      let userDatafromApi;
-      if (userInfo) {
-        dialogueStatus = userInfo.dialoguestatus;
-        isAuthenticated = userInfo.isAuthenticated;
-        birthDaydate = userInfo.birthdaydate;
-        if (userInfo?.lastname) {
-          const data = JSON.parse(userInfo?.lastname);
-          userDatafromApi = data;
+      try {
+        const userInfo = await findUserByChatId(chatId);
+        let dialogueStatus;
+        let isAuthenticated;
+        let birthDaydate;
+        let userDatafromApi;
+        if (userInfo) {
+          dialogueStatus = userInfo.dialoguestatus;
+          isAuthenticated = userInfo.isAuthenticated;
+          birthDaydate = userInfo.birthdaydate;
+          if (userInfo?.lastname) {
+            const data = JSON.parse(userInfo?.lastname);
+            userDatafromApi = data;
+          }
+          
         }
+  
+      } catch (error) {
         
       }
 
