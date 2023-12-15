@@ -1,4 +1,4 @@
-import { bot } from "../app.mjs";
+import { bot } from "../app.js";
 import { DateTime } from "luxon";
 import { dataBot } from '../values.mjs';
 

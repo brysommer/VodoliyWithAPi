@@ -1,4 +1,4 @@
-import { bot } from "./app.mjs";
+import { bot } from "./app.js";
 import axios from 'axios';
 import { dataBot } from './values.mjs';
 import fs from 'fs';
